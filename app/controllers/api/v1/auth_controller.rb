@@ -22,7 +22,16 @@ class Api::V1::AuthController < ApplicationController
   end
 
   def logout
-    render json: { message: 'You have been logged out' }, status: :ok
+    token = request.headers['Authorization']&.split(' ')&.last
+    exp = JsonWebToken.decode(token)&.[](:exp)
+  
+    if token && exp
+      $redis.set(token, true)
+      $redis.expireat(token, exp)
+      render json: { message: "You have been logged out" }, status: :ok
+    else
+      render json: { error: "Invalid token" }, status: :unauthorized
+    end
   end
 
   private

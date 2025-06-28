@@ -3,9 +3,17 @@ class ApplicationController < ActionController::API
 
   def authorize_request
     header = request.headers['Authorization']
-    header = header.split(' ').last if header
-    decoded = JsonWebToken.decode(header)
-    @current_user = User.find_by(id: decoded[:user_id]) if decoded
+    token = header.split(' ').last if header
+  
+    if $redis.get(token)
+      render json: { error: 'Token has been revoked' }, status: :unauthorized
+      return
+    end
+  
+    decoded = JsonWebToken.decode(token)
+    @current_user = User.find(decoded[:user_id]) if decoded
+  
     render json: { errors: 'Unauthorized' }, status: :unauthorized unless @current_user
   end
+  
 end
