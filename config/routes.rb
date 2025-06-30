@@ -15,6 +15,8 @@ Rails.application.routes.draw do
       post 'login', to: 'auth#login'
       post 'logout', to: 'auth#logout'
       delete 'todos', to: 'todos#destroy_all'
+      post 'forgot_password', to: 'passwords#forgot'
+      post 'reset_password',  to: 'passwords#reset'
       resources :todos
     end
   end
